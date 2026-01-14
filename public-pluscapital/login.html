@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Plus Capital</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="logo-box">
+            <div class="logo">+Plus</div>
+            <div class="logo-subtitle">CAPITAL</div>
+        </div>
+
+        <h1 class="login-title">Acesso ao Sistema</h1>
+        <p class="login-subtitle">Entre com suas credenciais</p>
+
+        <div id="message" class="message"></div>
+
+        <form id="loginForm" class="form">
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" name="username" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        </form>
+
+        <div class="login-footer">
+            <p>&copy; 2024 Plus Capital. Todos os direitos reservados.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.primeiroAcesso) {
+                        window.location.href = '/representante/trocar-senha.html';
+                    } else if (result.tipo === 'admin') {
+                        window.location.href = '/admin/dashboard';
+                    } else {
+                        window.location.href = '/representante/dashboard';
+                    }
+                } else {
+                    showMessage(result.error || 'Erro ao fazer login', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        });
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message message-${type} show`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+
+        document.getElementById('username').focus();
+    </script>
+</body>
+</html>

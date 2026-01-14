@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin Plus Capital</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">+Plus</div>
+            <div class="logo-subtitle">CAPITAL</div>
+
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar" id="userAvatar"></div>
+                <div class="sidebar-user-name" id="userName"></div>
+                <div class="sidebar-user-role">Administrador</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#informacoes" class="nav-item active" data-page="informacoes">Informações</a>
+            <a href="#visao-geral" class="nav-item" data-page="visao-geral">Visão Geral</a>
+            <a href="#financeiro" class="nav-item" data-page="financeiro">Financeiro</a>
+            <a href="#faq" class="nav-item" data-page="faq">FAQ</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div id="currentDateTime"></div>
+            <button class="btn btn-secondary btn-block mt-10" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- PÁGINA INFORMAÇÕES -->
+        <div id="page-informacoes" class="page-content">
+            <div class="page-header">
+                <h1 class="page-title">Informações</h1>
+                <p class="page-subtitle">Dashboard administrativo</p>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card card-stat">
+                    <div class="card-title">Representantes</div>
+                    <div class="card-value" id="totalReps">0</div>
+                </div>
+                <div class="card card-stat">
+                    <div class="card-title">Leads Totais</div>
+                    <div class="card-value" id="totalLeads">0</div>
+                </div>
+                <div class="card card-stat">
+                    <div class="card-title">Vendas Fechadas</div>
+                    <div class="card-value" id="totalVendas">0</div>
+                </div>
+                <div class="card card-stat">
+                    <div class="card-title">Comissões Pagas</div>
+                    <div class="card-value" id="totalComissoes">R$ 0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Seu Link de Cadastro de Representantes</h3>
+                <p class="mb-10">Compartilhe este link para cadastrar novos representantes:</p>
+                <div class="flex-between gap-10">
+                    <input type="text" id="linkCadastro" readonly style="flex: 1;">
+                    <button class="btn btn-primary" onclick="copiarLink()">Copiar Link</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA VISÃO GERAL -->
+        <div id="page-visao-geral" class="page-content" style="display: none;">
+            <div class="page-header flex-between">
+                <div>
+                    <h1 class="page-title">Visão Geral</h1>
+                    <p class="page-subtitle">Representantes e Leads</p>
+                </div>
+            </div>
+
+            <div class="card mb-20">
+                <h3 class="card-title">Representantes</h3>
+                <div id="representantesList"></div>
+            </div>
+        </div>
+
+        <!-- PÁGINA FINANCEIRO -->
+        <div id="page-financeiro" class="page-content" style="display: none;">
+            <div class="page-header">
+                <h1 class="page-title">Financeiro</h1>
+                <p class="page-subtitle">Gestão de Leads e Vendas</p>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Leads</h3>
+                <div id="leadsList"></div>
+            </div>
+        </div>
+
+        <!-- PÁGINA FAQ -->
+        <div id="page-faq" class="page-content" style="display: none;">
+            <div class="page-header">
+                <h1 class="page-title">FAQ</h1>
+                <p class="page-subtitle">Perguntas frequentes</p>
+            </div>
+
+            <div class="card mb-20">
+                <h4>Como aprovar um representante?</h4>
+                <p>Acesse Visão Geral, encontre o representante com status "em análise" e clique em Aprovar.</p>
+            </div>
+
+            <div class="card mb-20">
+                <h4>Como atualizar o status de um lead?</h4>
+                <p>Na seção Financeiro, clique no lead e atualize o status conforme o andamento da negociação.</p>
+            </div>
+
+            <div class="card">
+                <h4>Contato Suporte</h4>
+                <p><strong>E-mail:</strong> admin@pluscapital.com</p>
+                <p><strong>Telefone:</strong> (11) 7777-7777</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES DO LEAD -->
+    <div id="modalLead" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalhes do Lead</h3>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="leadDetalhes"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const data = await response.json();
+
+                if (!data.success || data.user.tipo !== 'admin') {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                currentUser = data.user;
+                document.getElementById('userName').textContent = currentUser.nome;
+                document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0).toUpperCase();
+
+                await loadLinkCadastro();
+                await loadEstatisticas();
+                await loadRepresentantes();
+                await loadLeads();
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadLinkCadastro() {
+            const response = await fetch('/api/admin/link-cadastro');
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('linkCadastro').value = data.linkCompleto;
+            }
+        }
+
+        async function loadEstatisticas() {
+            const response = await fetch('/api/admin/estatisticas');
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('totalReps').textContent = data.totalRepresentantes;
+                document.getElementById('totalLeads').textContent = data.totalLeads;
+                document.getElementById('totalVendas').textContent = data.leadsAprovados;
+                document.getElementById('totalComissoes').textContent =
+                    'R$ ' + data.totalComissoes.toFixed(0).toLocaleString('pt-BR');
+            }
+        }
+
+        async function loadRepresentantes() {
+            const response = await fetch('/api/admin/representantes');
+            const data = await response.json();
+
+            const container = document.getElementById('representantesList');
+
+            if (data.representantes.length === 0) {
+                container.innerHTML = '<p class="text-center">Nenhum representante cadastrado</p>';
+                return;
+            }
+
+            container.innerHTML = data.representantes.map(rep => `
+                <div class="list-item">
+                    <div class="list-item-title">${rep.nomeCompleto}</div>
+                    <div class="list-item-meta">
+                        <div><strong>Email:</strong> ${rep.email}</div>
+                        <div><strong>Telefone:</strong> ${rep.celular}</div>
+                        <div><strong>Status:</strong> <span class="badge badge-${rep.status}">${rep.status.replace('_', ' ')}</span></div>
+                        <div><strong>Leads:</strong> ${rep.totalLeads || 0}</div>
+                    </div>
+                    ${rep.status === 'em_analise' ? `
+                        <button class="btn btn-primary btn-sm mt-10" onclick="aprovarRepresentante(${rep.id})">
+                            Aprovar
+                        </button>
+                    ` : ''}
+                    ${rep.status === 'aprovado' && rep.username ? `
+                        <div class="mt-10" style="background: #FEF3C7; padding: 10px; border-radius: 4px;">
+                            <strong>Usuário:</strong> ${rep.username} | <strong>Senha temporária:</strong> ${rep.password}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function aprovarRepresentante(id) {
+            if (!confirm('Aprovar este representante?')) return;
+
+            const response = await fetch(`/api/admin/representantes/${id}/aprovar`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`Representante aprovado!\nUsuário: ${data.credenciais.username}\nSenha: ${data.credenciais.password}\n\nEnvie estas credenciais para o representante.`);
+                loadRepresentantes();
+                loadEstatisticas();
+            }
+        }
+
+        async function loadLeads() {
+            const response = await fetch('/api/admin/leads');
+            const data = await response.json();
+
+            const container = document.getElementById('leadsList');
+
+            if (data.leads.length === 0) {
+                container.innerHTML = '<p class="text-center">Nenhum lead cadastrado</p>';
+                return;
+            }
+
+            container.innerHTML = data.leads.map(lead => `
+                <div class="list-item" onclick="verLead(${lead.id})" style="cursor: pointer;">
+                    <div class="list-item-title">${lead.nomeCompleto}</div>
+                    <div class="list-item-meta">
+                        <div><strong>Email:</strong> ${lead.email}</div>
+                        <div><strong>Telefone:</strong> ${lead.telefone}</div>
+                        <div><strong>Interesse:</strong> ${lead.interesse}</div>
+                        <div><strong>Status:</strong> <span class="badge badge-${lead.status}">${lead.status.replace('_', ' ')}</span></div>
+                        ${lead.valorFinanciamento ? `<div><strong>Valor:</strong> R$ ${parseFloat(lead.valorFinanciamento).toFixed(2)}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function verLead(id) {
+            const response = await fetch(`/api/admin/leads/${id}`);
+            const data = await response.json();
+
+            if (!data.success) return;
+
+            const lead = data.lead;
+
+            document.getElementById('leadDetalhes').innerHTML = `
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" value="${lead.nomeCompleto}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" value="${lead.cpf}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" value="${lead.email}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="text" value="${lead.telefone}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="leadStatus">
+                        <option value="novo" ${lead.status === 'novo' ? 'selected' : ''}>Novo</option>
+                        <option value="em_analise" ${lead.status === 'em_analise' ? 'selected' : ''}>Em Análise</option>
+                        <option value="em_negociacao" ${lead.status === 'em_negociacao' ? 'selected' : ''}>Em Negociação</option>
+                        <option value="aprovado" ${lead.status === 'aprovado' ? 'selected' : ''}>Aprovado</option>
+                        <option value="reprovado" ${lead.status === 'reprovado' ? 'selected' : ''}>Reprovado</option>
+                        <option value="nao_seguiu" ${lead.status === 'nao_seguiu' ? 'selected' : ''}>Não Seguiu</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Valor Financiamento</label>
+                    <input type="number" id="leadValor" value="${lead.valorFinanciamento || ''}" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>% Comissão</label>
+                    <input type="number" id="leadPercentual" value="${lead.percentualComissao || ''}" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Observações Internas</label>
+                    <textarea id="leadObs">${lead.observacoesInternas || ''}</textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="salvarLead(${lead.id})">Salvar</button>
+            `;
+
+            document.getElementById('modalLead').classList.add('show');
+        }
+
+        async function salvarLead(id) {
+            const status = document.getElementById('leadStatus').value;
+            const valorFinanciamento = document.getElementById('leadValor').value;
+            const percentualComissao = document.getElementById('leadPercentual').value;
+            const observacoesInternas = document.getElementById('leadObs').value;
+
+            const dados = {
+                status,
+                observacoesInternas
+            };
+
+            if (status === 'aprovado' && valorFinanciamento && percentualComissao) {
+                dados.valorFinanciamento = valorFinanciamento;
+                dados.percentualComissao = percentualComissao;
+                dados.valorComissao = (parseFloat(valorFinanciamento) * parseFloat(percentualComissao) / 100).toFixed(2);
+                dados.dataPagamentoComissao = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+            }
+
+            const response = await fetch(`/api/admin/leads/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Lead atualizado com sucesso!');
+                fecharModal();
+                loadLeads();
+                loadEstatisticas();
+            }
+        }
+
+        function fecharModal() {
+            document.getElementById('modalLead').classList.remove('show');
+        }
+
+        function copiarLink() {
+            const input = document.getElementById('linkCadastro');
+            input.select();
+            document.execCommand('copy');
+            alert('Link copiado!');
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST' })
+                .then(() => window.location.href = '/login');
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDateTime').textContent =
+                now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+        }
+
+        // Navegação
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+
+                const page = this.dataset.page;
+                document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+                document.getElementById('page-' + page).style.display = 'block';
+            });
+        });
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        loadData();
+    </script>
+</body>
+</html>

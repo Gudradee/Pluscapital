@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicite seu Crédito - Plus Capital</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: var(--white);
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="logo-box" style="text-align: center; margin-bottom: 30px;">
+            <div class="logo">+Plus</div>
+            <div class="logo-subtitle">CAPITAL</div>
+        </div>
+
+        <h1 class="page-title" style="text-align: center;">Solicite seu Crédito</h1>
+        <p class="page-subtitle" style="text-align: center; margin-bottom: 30px;">Crédito com garantia de imóvel ou veículo</p>
+
+        <div id="message" class="message"></div>
+
+        <form id="leadForm" class="form">
+            <div class="form-group">
+                <label for="nomeCompleto">Nome Completo *</label>
+                <input type="text" id="nomeCompleto" name="nomeCompleto" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cpf">CPF *</label>
+                <input type="text" id="cpf" name="cpf" required maxlength="14" placeholder="000.000.000-00">
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-mail *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone">Telefone *</label>
+                <input type="tel" id="telefone" name="telefone" required placeholder="(00) 00000-0000">
+            </div>
+
+            <div class="form-group">
+                <label for="renda">Renda Mensal *</label>
+                <input type="text" id="renda" name="renda" required placeholder="R$ 0,00">
+            </div>
+
+            <div class="form-group">
+                <label for="interesse">Interesse *</label>
+                <select id="interesse" name="interesse" required>
+                    <option value="">Selecione...</option>
+                    <option value="imovel">Crédito com garantia de Imóvel</option>
+                    <option value="veiculo">Crédito com garantia de Veículo</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações (opcional)</label>
+                <textarea id="observacoes" name="observacoes"></textarea>
+                <div class="helper-text">Conte-nos mais sobre sua necessidade</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Enviar Solicitação</button>
+        </form>
+
+        <div class="mt-20 text-center" style="font-size: 12px; color: var(--gray-dark);">
+            <p>Ao enviar este formulário, você concorda com nossa política de privacidade</p>
+        </div>
+    </div>
+
+    <script>
+        const representanteCodigo = window.location.pathname.split('/').pop();
+
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('telefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('renda').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = (parseFloat(value) / 100).toFixed(2);
+            e.target.value = 'R$ ' + value.replace('.', ',');
+        });
+
+        document.getElementById('leadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                representanteCodigo: representanteCodigo,
+                nomeCompleto: document.getElementById('nomeCompleto').value,
+                cpf: document.getElementById('cpf').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                renda: document.getElementById('renda').value,
+                interesse: document.getElementById('interesse').value,
+                observacoes: document.getElementById('observacoes').value
+            };
+
+            try {
+                const response = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    setTimeout(() => {
+                        document.getElementById('leadForm').reset();
+                    }, 2000);
+                } else {
+                    showMessage(result.error || 'Erro ao enviar solicitação', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        });
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message message-${type} show`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+    </script>
+</body>
+</html>

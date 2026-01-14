@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "start:pluscapital": "node server-pluscapital.js",
     "test": "node userService.test.js"
   },
   "keywords": ["refactoring", "user-service", "express"],

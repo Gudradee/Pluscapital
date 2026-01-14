@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Representante Plus Capital</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">+Plus</div>
+            <div class="logo-subtitle">CAPITAL</div>
+
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar" onclick="window.location.href='#perfil'" id="userAvatar"></div>
+                <div class="sidebar-user-name" id="userName"></div>
+                <div class="sidebar-user-role">Representante</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#informacoes" class="nav-item active" data-page="informacoes">Informações</a>
+            <a href="#notificacoes" class="nav-item" data-page="notificacoes">Notificações</a>
+            <a href="#financeiro" class="nav-item" data-page="financeiro">Financeiro</a>
+            <a href="#faq" class="nav-item" data-page="faq">FAQ</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div id="currentDateTime"></div>
+            <button class="btn btn-secondary btn-block mt-10" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- PÁGINA INFORMAÇÕES -->
+        <div id="page-informacoes" class="page-content">
+            <div class="page-header">
+                <h1 class="page-title">Informações</h1>
+                <p class="page-subtitle">Bem-vindo ao sistema Plus Capital</p>
+            </div>
+
+            <div class="card mb-20">
+                <h3 class="card-title">Bem-vindo ao Programa de Representantes</h3>
+                <p>A Plus Capital oferece soluções de crédito com garantia de imóvel e veículo. Como representante, você pode gerar renda extra indicando clientes.</p>
+
+                <h4 class="mt-20 mb-10">Como funciona:</h4>
+                <ol style="margin-left: 20px; line-height: 1.8;">
+                    <li>Gere seu link/QR Code personalizado na seção Financeiro</li>
+                    <li>Divulgue para seus contatos</li>
+                    <li>Acompanhe seus leads em tempo real</li>
+                    <li>Receba comissões por vendas fechadas</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Seu Link e QR Code</h3>
+                <p class="mb-10">Use seu link personalizado para captar clientes:</p>
+                <div class="flex-between gap-10" style="align-items: flex-start;">
+                    <input type="text" id="linkRepresentante" readonly style="flex: 1;">
+                    <button class="btn btn-primary" onclick="copiarLink()">Copiar Link</button>
+                </div>
+                <div class="mt-20">
+                    <button class="btn btn-outline" onclick="gerarQRCode()">Gerar QR Code</button>
+                    <p class="helper-text mt-10">Use o QR Code em cartões de visita, banners e materiais físicos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA NOTIFICAÇÕES -->
+        <div id="page-notificacoes" class="page-content" style="display: none;">
+            <div class="page-header">
+                <h1 class="page-title">Notificações</h1>
+                <p class="page-subtitle">Comunicados e atualizações</p>
+            </div>
+            <div id="notificacoesList"></div>
+        </div>
+
+        <!-- PÁGINA FINANCEIRO -->
+        <div id="page-financeiro" class="page-content" style="display: none;">
+            <div class="page-header">
+                <h1 class="page-title">Financeiro</h1>
+                <p class="page-subtitle">Seus leads e comissões</h1>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card card-stat">
+                    <div class="card-title">Total de Leads</div>
+                    <div class="card-value" id="totalLeads">0</div>
+                </div>
+                <div class="card card-stat">
+                    <div class="card-title">Vendas Fechadas</div>
+                    <div class="card-value" id="vendasFechadas">0</div>
+                </div>
+                <div class="card card-stat">
+                    <div class="card-title">Comissão Pendente</div>
+                    <div class="card-value" id="comissaoPendente">R$ 0,00</div>
+                </div>
+                <div class="card card-stat">
+                    <div class="card-title">Comissão Paga</div>
+                    <div class="card-value" id="comissaoPaga">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Seus Leads</h3>
+                <div id="leadsList"></div>
+            </div>
+        </div>
+
+        <!-- PÁGINA FAQ -->
+        <div id="page-faq" class="page-content" style="display: none;">
+            <div class="page-header">
+                <h1 class="page-title">FAQ</h1>
+                <p class="page-subtitle">Perguntas frequentes</p>
+            </div>
+
+            <div class="card mb-20">
+                <h4>Como funciona o programa de comissões?</h4>
+                <p>Você recebe comissão sobre cada venda fechada originada pelo seu link/QR Code.</p>
+            </div>
+
+            <div class="card mb-20">
+                <h4>Quando recebo minha comissão?</h4>
+                <p>As comissões são pagas conforme cronograma definido no momento da aprovação da venda.</p>
+            </div>
+
+            <div class="card mb-20">
+                <h4>Contato da Tesouraria</h4>
+                <p><strong>Telefone:</strong> (11) 9999-9999</p>
+                <p><strong>WhatsApp:</strong> (11) 9999-9999</p>
+                <p><strong>Horário:</strong> Segunda a Sexta, 9h às 18h</p>
+            </div>
+
+            <div class="card">
+                <h4>Suporte Técnico</h4>
+                <p><strong>E-mail:</strong> suporte@pluscapital.com</p>
+                <p><strong>Telefone:</strong> (11) 8888-8888</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const data = await response.json();
+
+                if (!data.success || data.user.tipo !== 'representante') {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                currentUser = data.user;
+                document.getElementById('userName').textContent = currentUser.nome;
+                document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0).toUpperCase();
+
+                await loadLink();
+                await loadEstatisticas();
+                await loadLeads();
+                await loadNotificacoes();
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadLink() {
+            const response = await fetch('/api/representante/link');
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('linkRepresentante').value = data.linkCompleto;
+            }
+        }
+
+        async function loadEstatisticas() {
+            const response = await fetch('/api/representante/estatisticas');
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('totalLeads').textContent = data.totalLeads;
+                document.getElementById('vendasFechadas').textContent = data.vendasFechadas;
+                document.getElementById('comissaoPendente').textContent =
+                    'R$ ' + data.totalComissaoPendente.toFixed(2).replace('.', ',');
+                document.getElementById('comissaoPaga').textContent =
+                    'R$ ' + data.totalComissaoPaga.toFixed(2).replace('.', ',');
+            }
+        }
+
+        async function loadLeads() {
+            const response = await fetch('/api/representante/leads');
+            const data = await response.json();
+
+            const container = document.getElementById('leadsList');
+
+            if (data.leads.length === 0) {
+                container.innerHTML = '<p class="text-center">Nenhum lead cadastrado ainda</p>';
+                return;
+            }
+
+            container.innerHTML = data.leads.map(lead => `
+                <div class="list-item">
+                    <div class="list-item-title">${lead.nomeCompleto}</div>
+                    <div class="list-item-meta">
+                        <div><strong>Data:</strong> ${new Date(lead.criadoEm).toLocaleDateString('pt-BR')}</div>
+                        <div><strong>Interesse:</strong> ${lead.interesse}</div>
+                        <div><strong>Status:</strong> <span class="badge badge-${lead.status}">${lead.status.replace('_', ' ')}</span></div>
+                        ${lead.valorComissao ? `<div><strong>Comissão:</strong> R$ ${lead.valorComissao.toFixed(2).replace('.', ',')}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadNotificacoes() {
+            const response = await fetch('/api/representante/notificacoes');
+            const data = await response.json();
+
+            const container = document.getElementById('notificacoesList');
+
+            if (data.notificacoes.length === 0) {
+                container.innerHTML = '<p class="text-center">Nenhuma notificação</p>';
+                return;
+            }
+
+            container.innerHTML = data.notificacoes.map(notif => `
+                <div class="list-item ${!notif.lida ? 'new' : ''}">
+                    <div class="list-item-title">${notif.titulo}</div>
+                    <p>${notif.texto}</p>
+                    <div class="helper-text mt-10">${new Date(notif.criadoEm).toLocaleString('pt-BR')}</div>
+                </div>
+            `).join('');
+        }
+
+        function copiarLink() {
+            const input = document.getElementById('linkRepresentante');
+            input.select();
+            document.execCommand('copy');
+            alert('Link copiado!');
+        }
+
+        function gerarQRCode() {
+            const link = document.getElementById('linkRepresentante').value;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+            window.open(qrUrl, '_blank');
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST' })
+                .then(() => window.location.href = '/login');
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDateTime').textContent =
+                now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+        }
+
+        // Navegação
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+
+                const page = this.dataset.page;
+                document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+                document.getElementById('page-' + page).style.display = 'block';
+            });
+        });
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        loadData();
+    </script>
+</body>
+</html>
