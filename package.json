@@ -1,0 +1,16 @@
+{
+  "name": "pluscapital-user-service",
+  "version": "1.0.0",
+  "description": "Refactored user registration service with web interface",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node userService.test.js"
+  },
+  "keywords": ["refactoring", "user-service", "express"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
